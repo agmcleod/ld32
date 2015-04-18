@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 public class GameEntity {
     protected Texture texture;
     protected Bounds bounds;
-    private Bounds worldBounds;
+    protected Bounds worldBounds;
     protected Vector2 position;
     protected float width;
     protected float height;
