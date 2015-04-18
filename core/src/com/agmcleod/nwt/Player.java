@@ -2,11 +2,9 @@ package com.agmcleod.nwt;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -27,6 +25,7 @@ public class Player extends GameEntity {
     private float stateTime = 0f;
     private boolean flipX;
     private Direction direction;
+    private Bounds attackBounds;
 
     public Player() {
         super("player.png");
@@ -76,6 +75,16 @@ public class Player extends GameEntity {
         currentAnimation = walkRightAnimation;
         attacking = true;
         direction = Direction.RIGHT;
+        attackBounds = new Bounds();
+    }
+
+    public Bounds getAttackBounds() {
+        attackBounds.set(worldBounds.x - 20, worldBounds.y - 10, worldBounds.width + 50, worldBounds.height + 20);
+        return attackBounds;
+    }
+
+    public Direction getDirection() {
+        return direction;
     }
 
     public Vector2 getVelocity() {
@@ -87,6 +96,10 @@ public class Player extends GameEntity {
         worldBounds = super.getWorldBounds();
         worldBounds.x -= this.width;
         return worldBounds;
+    }
+
+    public boolean isAttacking() {
+        return attacking;
     }
 
     @Override
@@ -149,16 +162,19 @@ public class Player extends GameEntity {
                 attacking = true;
             }
         }
-        else {
-            attacking = false;
-            if (direction == Direction.RIGHT || direction == Direction.LEFT) {
-                currentAnimation = walkRightAnimation;
-            }
-            else if (direction == Direction.DOWN) {
-                currentAnimation = walkDownAnimation;
-            }
-            else if (direction == Direction.UP) {
-                currentAnimation = walkUpAnimation;
+
+        if (attacking) {
+            if (rightAttack.isAnimationFinished(stateTime) || downAttack.isAnimationFinished(stateTime) || upAttack.isAnimationFinished(stateTime)) {
+                attacking = false;
+                if (direction == Direction.RIGHT || direction == Direction.LEFT) {
+                    currentAnimation = walkRightAnimation;
+                }
+                else if (direction == Direction.DOWN) {
+                    currentAnimation = walkDownAnimation;
+                }
+                else if (direction == Direction.UP) {
+                    currentAnimation = walkUpAnimation;
+                }
             }
         }
 

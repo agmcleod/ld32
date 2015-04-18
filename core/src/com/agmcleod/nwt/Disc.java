@@ -10,8 +10,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class Disc extends GameEntity {
     private boolean alive;
     private Animation appearAnimation;
+    private Bounds hitBox;
     private TextureRegion currentFrame;
     private float animationState;
+    private int health;
     public Disc() {
         super("disc.png");
         alive = false;
@@ -28,6 +30,13 @@ public class Disc extends GameEntity {
         appearFrames[3] = tmp[0][0];
 
         appearAnimation = new Animation(0.15f, appearFrames);
+        health = 5;
+        hitBox = new Bounds();
+    }
+
+    public Bounds getHitBox() {
+        hitBox.set(worldBounds.x - 10, worldBounds.y - 10, worldBounds.width + 10, worldBounds.height + 10);
+        return hitBox;
     }
 
     public boolean isAlive() {
@@ -40,8 +49,22 @@ public class Disc extends GameEntity {
     }
 
     public void setAlive(boolean value) {
-        alive = true;
+        if (!alive && value) {
+            health = 5;
+        }
+        alive = value;
         animationState = 0f;
+    }
+
+    public boolean takeDamage() {
+        health--;
+        if (health <= 0) {
+            alive = false;
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public void update(float dt) {

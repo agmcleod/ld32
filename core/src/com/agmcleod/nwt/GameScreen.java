@@ -23,6 +23,7 @@ public class GameScreen implements Screen {
     private float spawnTimeCounter;
     private Player player;
     private Array<Bounds> worldBounds;
+    private float attackTimer;
 
     public void collisions() {
         Iterator<Bounds> it = worldBounds.iterator();
@@ -38,15 +39,15 @@ public class GameScreen implements Screen {
         if (bounds.overlaps(playerBounds)) {
             Vector2 vel = player.getVelocity();
             if (Intersector.intersectRectangles(bounds, playerBounds, overlap)) {
-                if (playerBounds.getRight() > bounds.getRight() && playerBounds.getX() < bounds.getRight()) {
+                if (playerBounds.leftOverlapsWith(bounds)) {
                     player.getPosition().x += overlap.width;
-                } else if (playerBounds.getX() < bounds.getX() && playerBounds.getRight() > bounds.getX()) {
+                } else if (playerBounds.rightOverlapsWith(bounds)) {
                     player.getPosition().x -= overlap.width;
                 }
 
-                if (playerBounds.getTop() > bounds.getTop() && playerBounds.getY() < bounds.getTop()) {
+                if (playerBounds.bottomOverlapsWith(bounds)) {
                     player.getPosition().y += overlap.height;
-                } else if (playerBounds.getY() < bounds.getY() && playerBounds.getTop() > bounds.getY()) {
+                } else if (playerBounds.topOverlapsWith(bounds)) {
                     player.getPosition().y -= overlap.height;
                 }
             }
@@ -108,6 +109,7 @@ public class GameScreen implements Screen {
         }};
         disc = new Disc();
         spawnTimeCounter = 0;
+        attackTimer = 0;
     }
 
     public void spawnDisc() {
@@ -126,5 +128,28 @@ public class GameScreen implements Screen {
             disc.update(dt);
         }
         player.update(dt);
+        if (player.isAttacking() && attackTimer > 0.2) {
+            attackTimer = 0f;
+            Bounds playerBounds = player.getAttackBounds();
+            Bounds discBounds = disc.getHitBox();
+            if (discBounds.overlaps(playerBounds)) {
+                boolean discDead = false;
+                if (playerBounds.bottomOverlapsWith(discBounds) && player.getDirection() == Direction.DOWN) {
+                    discDead = disc.takeDamage();
+                } else if (playerBounds.rightOverlapsWith(discBounds) && player.getDirection() == Direction.RIGHT) {
+                    discDead = disc.takeDamage();
+                } else if (playerBounds.leftOverlapsWith(discBounds) && player.getDirection() == Direction.LEFT) {
+                    discDead = disc.takeDamage();
+                } else if (playerBounds.topOverlapsWith(discBounds) && player.getDirection() == Direction.UP) {
+                    discDead = disc.takeDamage();
+                }
+
+                if (discDead) {
+                    spawnTimeCounter = 0f;
+                }
+            }
+        }
+
+        attackTimer += dt;
     }
 }

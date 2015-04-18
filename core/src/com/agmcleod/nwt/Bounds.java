@@ -32,6 +32,22 @@ public class Bounds extends Rectangle {
         return y + height;
     }
 
+    public boolean bottomOverlapsWith(Bounds r) {
+        return getTop() > r.getTop() && getY() < r.getTop();
+    }
+
+    public boolean leftOverlapsWith(Bounds r) {
+        return getRight() > r.getRight() && getX() < r.getRight();
+    }
+
+    public boolean rightOverlapsWith(Bounds r) {
+        return getX() < r.getX() && getRight() > r.getX();
+    }
+
+    public boolean topOverlapsWith(Bounds r) {
+        return getY() < r.getY() && getTop() > r.getY();
+    }
+
     public void sub(Bounds b) {
         this.x -= b.x;
         this.y -= b.y;
