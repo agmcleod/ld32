@@ -16,12 +16,17 @@ public class Player extends GameEntity {
     Vector2 velocity;
     private final int SPEED = 350;
     private TextureRegion currentFrame;
+    private boolean attacking;
+    private Animation downAttack;
+    private Animation rightAttack;
+    private Animation upAttack;
     private Animation walkRightAnimation;
     private Animation walkUpAnimation;
     private Animation walkDownAnimation;
     private Animation currentAnimation;
     private float stateTime = 0f;
     private boolean flipX;
+    private Direction direction;
 
     public Player() {
         super("player.png");
@@ -53,7 +58,24 @@ public class Player extends GameEntity {
         walkUpFrames[3] = tmp[1][1];
         walkUpAnimation = new Animation(0.1f, walkUpFrames);
 
+        TextureRegion[] attackUpFrames = new TextureRegion[2];
+        attackUpFrames[0] = tmp[0][3];
+        attackUpFrames[1] = tmp[0][1];
+        upAttack = new Animation(0.1f, attackUpFrames);
+
+        TextureRegion[] attackDownFrames = new TextureRegion[2];
+        attackDownFrames[0] = tmp[1][3];
+        attackDownFrames[1] = tmp[0][1];
+        downAttack = new Animation(0.1f, attackDownFrames);
+
+        TextureRegion[] attackRightFrames = new TextureRegion[2];
+        attackRightFrames[0] = tmp[2][3];
+        attackRightFrames[1] = tmp[0][0];
+        rightAttack = new Animation(0.1f, attackRightFrames);
+
         currentAnimation = walkRightAnimation;
+        attacking = true;
+        direction = Direction.RIGHT;
     }
 
     public Vector2 getVelocity() {
@@ -78,17 +100,19 @@ public class Player extends GameEntity {
     }
 
     public void update(float d) {
-        currentFrame = currentAnimation.getKeyFrame(stateTime, true);
+        currentFrame = currentAnimation.getKeyFrame(stateTime, !attacking);
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
             flipX = true;
             velocity.x = - SPEED * d;
             currentAnimation = walkRightAnimation;
+            direction = Direction.LEFT;
         }
 
         else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
             flipX = false;
             velocity.x = SPEED * d;
             currentAnimation = walkRightAnimation;
+            direction = Direction.RIGHT;
         }
         else {
             velocity.x = 0;
@@ -98,17 +122,47 @@ public class Player extends GameEntity {
             velocity.y = SPEED * d;
             flipX = false;
             currentAnimation = walkUpAnimation;
+            direction = Direction.UP;
         }
         else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) {
             velocity.y = - SPEED * d;
             flipX = false;
             currentAnimation = walkDownAnimation;
+            direction = Direction.DOWN;
         }
         else {
             velocity.y = 0;
         }
 
-        if (velocity.x != 0 || velocity.y != 0) {
+        if (Gdx.input.isKeyPressed(Input.Keys.ENTER) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            if (!attacking) {
+                if (direction == Direction.RIGHT || direction == Direction.LEFT) {
+                    currentAnimation = rightAttack;
+                }
+                else if (direction == Direction.DOWN) {
+                    currentAnimation = downAttack;
+                }
+                else if (direction == Direction.UP) {
+                    currentAnimation = upAttack;
+                }
+                stateTime = 0;
+                attacking = true;
+            }
+        }
+        else {
+            attacking = false;
+            if (direction == Direction.RIGHT || direction == Direction.LEFT) {
+                currentAnimation = walkRightAnimation;
+            }
+            else if (direction == Direction.DOWN) {
+                currentAnimation = walkDownAnimation;
+            }
+            else if (direction == Direction.UP) {
+                currentAnimation = walkUpAnimation;
+            }
+        }
+
+        if (velocity.x != 0 || velocity.y != 0 || attacking) {
             stateTime += d;
         }
 

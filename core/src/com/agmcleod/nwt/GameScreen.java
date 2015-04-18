@@ -16,7 +16,7 @@ import java.util.Iterator;
 /**
  * Created by aaronmcleod on 15-04-17.
  */
-public class GameScreen implements InputProcessor, Screen {
+public class GameScreen implements Screen {
     private Texture backgroundTexture;
     private SpriteBatch batch;
     private Disc disc;
@@ -38,15 +38,15 @@ public class GameScreen implements InputProcessor, Screen {
         if (bounds.overlaps(playerBounds)) {
             Vector2 vel = player.getVelocity();
             if (Intersector.intersectRectangles(bounds, playerBounds, overlap)) {
-                if (playerBounds.getRight() > bounds.getRight()) {
+                if (playerBounds.getRight() > bounds.getRight() && playerBounds.getX() < bounds.getRight()) {
                     player.getPosition().x += overlap.width;
-                } else if (playerBounds.getX() < bounds.getX()) {
+                } else if (playerBounds.getX() < bounds.getX() && playerBounds.getRight() > bounds.getX()) {
                     player.getPosition().x -= overlap.width;
                 }
 
-                if (playerBounds.getTop() > bounds.getTop()) {
+                if (playerBounds.getTop() > bounds.getTop() && playerBounds.getY() < bounds.getTop()) {
                     player.getPosition().y += overlap.height;
-                } else if (playerBounds.getY() < bounds.getY()) {
+                } else if (playerBounds.getY() < bounds.getY() && playerBounds.getTop() > bounds.getY()) {
                     player.getPosition().y -= overlap.height;
                 }
             }
@@ -122,46 +122,9 @@ public class GameScreen implements InputProcessor, Screen {
         if (spawnTimeCounter > 1.0f && !disc.isAlive()) {
             spawnDisc();
         }
+        if (disc.isAlive()) {
+            disc.update(dt);
+        }
         player.update(dt);
-    }
-
-    @Override
-    public boolean keyDown(int keycode) {
-        return false;
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        return false;
-    }
-
-    @Override
-    public boolean keyTyped(char character) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        return false;
-    }
-
-    @Override
-    public boolean scrolled(int amount) {
-        return false;
     }
 }
