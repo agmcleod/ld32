@@ -1,8 +1,10 @@
 package com.agmcleod.nwt;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 /**
  * Created by aaronmcleod on 15-04-18.
@@ -41,6 +43,26 @@ public class Disc extends GameEntity {
 
     public boolean isAlive() {
         return alive;
+    }
+
+    public void renderHealth(ShapeRenderer renderer) {
+        if (isAlive() && appearAnimation.isAnimationFinished(animationState)) {
+            Color c;
+            if (health == 5) {
+                c = Color.GREEN;
+            }
+            else if (health == 4 || health == 3) {
+                c = Color.YELLOW;
+            }
+            else if (health == 2) {
+                c = Color.ORANGE;
+            }
+            else {
+                c = Color.RED;
+            }
+            renderer.setColor(c);
+            renderer.rect(position.x, position.y + height, width * ((float) health / 5f), 5);
+        }
     }
 
     @Override

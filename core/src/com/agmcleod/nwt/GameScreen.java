@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -20,6 +21,7 @@ public class GameScreen implements Screen {
     private Texture backgroundTexture;
     private SpriteBatch batch;
     private Disc disc;
+    private ShapeRenderer shapeRenderer;
     private float spawnTimeCounter;
     private Player player;
     private Array<Bounds> worldBounds;
@@ -84,6 +86,9 @@ public class GameScreen implements Screen {
             disc.render(batch);
         }
         batch.end();
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        disc.renderHealth(shapeRenderer);
+        shapeRenderer.end();
     }
 
     @Override
@@ -110,6 +115,7 @@ public class GameScreen implements Screen {
         disc = new Disc();
         spawnTimeCounter = 0;
         attackTimer = 0;
+        shapeRenderer = new ShapeRenderer();
     }
 
     public void spawnDisc() {
