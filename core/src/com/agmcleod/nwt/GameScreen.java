@@ -33,7 +33,19 @@ public class GameScreen implements InputProcessor, Screen {
             if (bounds.overlaps(playerBounds)) {
                 Vector2 vel = player.getVelocity();
                 if (Intersector.intersectRectangles(bounds, playerBounds, overlap)) {
-                    player.getBounds().sub(overlap);
+                    if (playerBounds.getRight() > bounds.getRight()) {
+                        playerBounds.x += overlap.width;
+                    }
+                    else if (playerBounds.getX() < bounds.getX()) {
+                        playerBounds.x -= overlap.width;
+                    }
+
+                    if (playerBounds.getTop() > bounds.getTop()) {
+                        playerBounds.y += overlap.height;
+                    }
+                    else if (playerBounds.getY() < bounds.getY()) {
+                        playerBounds.y -= overlap.height;
+                    }
                 }
             }
         }

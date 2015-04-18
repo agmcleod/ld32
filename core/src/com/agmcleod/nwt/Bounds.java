@@ -1,6 +1,7 @@
 package com.agmcleod.nwt;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 /**
  * Created by aaronmcleod on 15-04-18.

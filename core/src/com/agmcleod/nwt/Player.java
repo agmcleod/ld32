@@ -15,7 +15,7 @@ public class Player {
     private Bounds bounds;
 
     Vector2 velocity;
-    private final int SPEED = 250;
+    private final int SPEED = 350;
 
     public Player() {
         this.texture = new Texture("player.png");
