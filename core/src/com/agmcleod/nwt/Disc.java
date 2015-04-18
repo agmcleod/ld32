@@ -2,21 +2,26 @@ package com.agmcleod.nwt;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 
 /**
  * Created by aaronmcleod on 15-04-18.
  */
 public class Disc extends GameEntity {
     private boolean alive;
-    private Animation appearAnimation;
-    private Bounds hitBox;
-    private TextureRegion currentFrame;
     private float animationState;
+    private Animation appearAnimation;
+    private TextureRegion currentFrame;
+    private Bounds hitBox;
+    private BitmapFont font;
+    private float stunTimer;
+
     private int health;
-    public Disc() {
+    public Disc(BitmapFont font) {
         super("disc.png");
         alive = false;
         bounds.set(0, 0, 80, 80);
@@ -34,6 +39,7 @@ public class Disc extends GameEntity {
         appearAnimation = new Animation(0.15f, appearFrames);
         health = 5;
         hitBox = new Bounds();
+        this.font = font;
     }
 
     public Bounds getHitBox() {
@@ -68,11 +74,15 @@ public class Disc extends GameEntity {
     @Override
     public void render(SpriteBatch batch) {
         batch.draw(currentFrame, position.x, position.y, width, height);
+        if (isAlive() && appearAnimation.isAnimationFinished(animationState)) {
+            font.draw(batch, String.valueOf(MathUtils.floor(stunTimer)), position.x + 30, position.y + 60);
+        }
     }
 
     public void setAlive(boolean value) {
         if (!alive && value) {
             health = 5;
+            stunTimer = 4f;
         }
         alive = value;
         animationState = 0f;
@@ -89,7 +99,14 @@ public class Disc extends GameEntity {
         }
     }
 
+    public boolean triggerStun() {
+        return (stunTimer <= 0);
+    }
+
     public void update(float dt) {
+        if (isAlive() && appearAnimation.isAnimationFinished(animationState)) {
+            stunTimer -= dt;
+        }
         animationState += dt;
         currentFrame = appearAnimation.getKeyFrame(animationState, false);
     }

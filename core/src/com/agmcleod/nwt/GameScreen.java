@@ -5,6 +5,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
@@ -21,6 +22,7 @@ public class GameScreen implements Screen {
     private Texture backgroundTexture;
     private SpriteBatch batch;
     private Disc disc;
+    private BitmapFont font;
     private ShapeRenderer shapeRenderer;
     private float spawnTimeCounter;
     private Player player;
@@ -61,6 +63,7 @@ public class GameScreen implements Screen {
         backgroundTexture.dispose();
         batch.dispose();
         player.dispose();
+        font.dispose();
     }
 
     @Override
@@ -112,7 +115,8 @@ public class GameScreen implements Screen {
             add(new Bounds(Gdx.graphics.getWidth(), 0, 64, Gdx.graphics.getHeight()));
             add(new Bounds(0, -64, Gdx.graphics.getWidth(), 64));
         }};
-        disc = new Disc();
+        font = new BitmapFont(Gdx.files.internal("font.fnt"), Gdx.files.internal("font.png"), false);
+        disc = new Disc(font);
         spawnTimeCounter = 0;
         attackTimer = 0;
         shapeRenderer = new ShapeRenderer();
