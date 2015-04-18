@@ -17,8 +17,11 @@ public class Player extends GameEntity {
     private final int SPEED = 350;
     private TextureRegion currentFrame;
     private Animation walkRightAnimation;
+    private Animation walkUpAnimation;
+    private Animation walkDownAnimation;
+    private Animation currentAnimation;
     private float stateTime = 0f;
-    private boolean flip;
+    private boolean flipX;
 
     public Player() {
         super("player.png");
@@ -35,6 +38,22 @@ public class Player extends GameEntity {
         walkRightFrames[2] = tmp[2][0];
         walkRightFrames[3] = tmp[1][0];
         walkRightAnimation = new Animation(0.1f, walkRightFrames);
+
+        TextureRegion[] walkDownFrames = new TextureRegion[4];
+        walkDownFrames[0] = tmp[0][2];
+        walkDownFrames[1] = tmp[1][2];
+        walkDownFrames[2] = tmp[2][2];
+        walkDownFrames[3] = tmp[1][2];
+        walkDownAnimation = new Animation(0.1f, walkDownFrames);
+
+        TextureRegion[] walkUpFrames = new TextureRegion[4];
+        walkUpFrames[0] = tmp[0][1];
+        walkUpFrames[1] = tmp[1][1];
+        walkUpFrames[2] = tmp[2][1];
+        walkUpFrames[3] = tmp[1][1];
+        walkUpAnimation = new Animation(0.1f, walkUpFrames);
+
+        currentAnimation = walkRightAnimation;
     }
 
     public Vector2 getVelocity() {
@@ -50,7 +69,7 @@ public class Player extends GameEntity {
 
     @Override
     public void render(SpriteBatch batch) {
-        if (flip) {
+        if (flipX) {
             batch.draw(currentFrame, position.x, position.y, -width, height);
         }
         else {
@@ -59,15 +78,17 @@ public class Player extends GameEntity {
     }
 
     public void update(float d) {
-        currentFrame = walkRightAnimation.getKeyFrame(stateTime, true);
+        currentFrame = currentAnimation.getKeyFrame(stateTime, true);
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
-            flip = true;
+            flipX = true;
             velocity.x = - SPEED * d;
+            currentAnimation = walkRightAnimation;
         }
 
         else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
-            flip = false;
+            flipX = false;
             velocity.x = SPEED * d;
+            currentAnimation = walkRightAnimation;
         }
         else {
             velocity.x = 0;
@@ -75,9 +96,13 @@ public class Player extends GameEntity {
 
         if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) {
             velocity.y = SPEED * d;
+            flipX = false;
+            currentAnimation = walkUpAnimation;
         }
         else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) {
             velocity.y = - SPEED * d;
+            flipX = false;
+            currentAnimation = walkDownAnimation;
         }
         else {
             velocity.y = 0;
