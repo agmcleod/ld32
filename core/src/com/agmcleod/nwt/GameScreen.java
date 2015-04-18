@@ -7,10 +7,9 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import org.w3c.dom.css.Rect;
 
 import java.util.Iterator;
 
@@ -20,32 +19,35 @@ import java.util.Iterator;
 public class GameScreen implements InputProcessor, Screen {
     private Texture backgroundTexture;
     private SpriteBatch batch;
+    private Disc disc;
+    private float spawnTimeCounter;
     private Player player;
     private Array<Bounds> worldBounds;
 
     public void collisions() {
         Iterator<Bounds> it = worldBounds.iterator();
-        Bounds playerBounds = player.getBounds();
+        Bounds playerBounds = player.getWorldBounds();
         Bounds overlap = new Bounds();
+        handleIntersectPlayerBounds(disc.getWorldBounds(), playerBounds, overlap);
         while (it.hasNext()) {
-            Bounds bounds = it.next();
+            handleIntersectPlayerBounds(it.next(), playerBounds, overlap);
+        }
+    }
 
-            if (bounds.overlaps(playerBounds)) {
-                Vector2 vel = player.getVelocity();
-                if (Intersector.intersectRectangles(bounds, playerBounds, overlap)) {
-                    if (playerBounds.getRight() > bounds.getRight()) {
-                        playerBounds.x += overlap.width;
-                    }
-                    else if (playerBounds.getX() < bounds.getX()) {
-                        playerBounds.x -= overlap.width;
-                    }
+    public void handleIntersectPlayerBounds(Bounds bounds, Bounds playerBounds, Bounds overlap) {
+        if (bounds.overlaps(playerBounds)) {
+            Vector2 vel = player.getVelocity();
+            if (Intersector.intersectRectangles(bounds, playerBounds, overlap)) {
+                if (playerBounds.getRight() > bounds.getRight()) {
+                    player.getPosition().x += overlap.width;
+                } else if (playerBounds.getX() < bounds.getX()) {
+                    player.getPosition().x -= overlap.width;
+                }
 
-                    if (playerBounds.getTop() > bounds.getTop()) {
-                        playerBounds.y += overlap.height;
-                    }
-                    else if (playerBounds.getY() < bounds.getY()) {
-                        playerBounds.y -= overlap.height;
-                    }
+                if (playerBounds.getTop() > bounds.getTop()) {
+                    player.getPosition().y += overlap.height;
+                } else if (playerBounds.getY() < bounds.getY()) {
+                    player.getPosition().y -= overlap.height;
                 }
             }
         }
@@ -70,13 +72,16 @@ public class GameScreen implements InputProcessor, Screen {
 
     @Override
     public void render(float dt) {
-        update();
+        update(dt);
         collisions();
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.gl.glClearColor(0, 0, 0, 1);
         batch.begin();
         batch.draw(backgroundTexture, 0, 0);
         player.render(batch);
+        if (disc.isAlive()) {
+            disc.render(batch);
+        }
         batch.end();
     }
 
@@ -101,10 +106,23 @@ public class GameScreen implements InputProcessor, Screen {
             add(new Bounds(Gdx.graphics.getWidth(), 0, 64, Gdx.graphics.getHeight()));
             add(new Bounds(0, -64, Gdx.graphics.getWidth(), 64));
         }};
+        disc = new Disc();
+        spawnTimeCounter = 0;
     }
 
-    public void update() {
-        player.update();
+    public void spawnDisc() {
+        int x = MathUtils.random(0, 4) * 128 + ((128 - 80) / 2) + 64;
+        int y = MathUtils.random(0, 4) * 128 + ((128 - 80) / 2);
+        disc.getPosition().set(x, y);
+        disc.setAlive(true);
+    }
+
+    public void update(float dt) {
+        spawnTimeCounter += dt;
+        if (spawnTimeCounter > 1.0f && !disc.isAlive()) {
+            spawnDisc();
+        }
+        player.update(dt);
     }
 
     @Override

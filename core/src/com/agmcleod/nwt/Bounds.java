@@ -10,6 +10,11 @@ public class Bounds extends Rectangle {
     public Bounds() {
         super();
     }
+
+    public Bounds(Bounds other) {
+        set(other.x, other.y, other.width, other.height);
+    }
+
     public Bounds(float x, float y, float width, float height) {
         super(x, y, width, height);
     }
