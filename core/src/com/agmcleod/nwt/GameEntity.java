@@ -25,6 +25,9 @@ public class GameEntity {
         height = bounds.height;
     }
 
+    public void collisionCallback() {
+    }
+
     public void dispose() {
         this.texture.dispose();
     }

@@ -13,7 +13,9 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.graphics.Color;
 
+import java.awt.*;
 import java.util.Iterator;
 
 /**
@@ -23,6 +25,7 @@ public class GameScreen implements InputProcessor, Screen {
     private Sound attackSound;
     private float attackTimer;
     private Texture backgroundTexture;
+    private BossRound bossRound;
     private SpriteBatch batch;
     TransitionCallback callback;
     private CoreGame cg;
@@ -54,44 +57,59 @@ public class GameScreen implements InputProcessor, Screen {
         attackTimer = 0f;
         Bounds playerBounds = player.getAttackBounds();
         Iterator<Disc> it = discs.iterator();
-        while (it.hasNext()) {
-            Disc disc = it.next();
-            Bounds discBounds = disc.getHitBox();
-            if (disc.isAlive() && discBounds.overlaps(playerBounds)) {
-                boolean discDead = false;
-                boolean dealtDamage = false;
-                if (playerBounds.bottomOverlapsWith(discBounds) && player.getDirection() == Direction.DOWN) {
-                    discDead = disc.takeDamage();
-                    dealtDamage = true;
-                } else if (playerBounds.rightOverlapsWith(discBounds) && player.getDirection() == Direction.RIGHT) {
-                    discDead = disc.takeDamage();
-                    dealtDamage = true;
-                } else if (playerBounds.leftOverlapsWith(discBounds) && player.getDirection() == Direction.LEFT) {
-                    discDead = disc.takeDamage();
-                    dealtDamage = true;
-                } else if (playerBounds.topOverlapsWith(discBounds) && player.getDirection() == Direction.UP) {
-                    discDead = disc.takeDamage();
-                    dealtDamage = true;
-                }
+        if (bossRound.engaged()) {
+            Bounds bossBounds = bossRound.getBoss().getWorldBounds();
+            if (playerBounds.bottomOverlapsWith(bossBounds) && player.getDirection() == Direction.DOWN) {
+                bossRound.killBoss();
+            } else if (playerBounds.rightOverlapsWith(bossBounds) && player.getDirection() == Direction.RIGHT) {
+                bossRound.killBoss();
+            } else if (playerBounds.leftOverlapsWith(bossBounds) && player.getDirection() == Direction.LEFT) {
+                bossRound.killBoss();
+            } else if (playerBounds.topOverlapsWith(bossBounds) && player.getDirection() == Direction.UP) {
+                bossRound.killBoss();
+            }
+        }
+        else {
+            while (it.hasNext()) {
+                Disc disc = it.next();
+                Bounds discBounds = disc.getHitBox();
+                if (disc.isAlive() && discBounds.overlaps(playerBounds)) {
+                    boolean discDead = false;
+                    boolean dealtDamage = false;
+                    if (playerBounds.bottomOverlapsWith(discBounds) && player.getDirection() == Direction.DOWN) {
+                        discDead = disc.takeDamage();
+                        dealtDamage = true;
+                    } else if (playerBounds.rightOverlapsWith(discBounds) && player.getDirection() == Direction.RIGHT) {
+                        discDead = disc.takeDamage();
+                        dealtDamage = true;
+                    } else if (playerBounds.leftOverlapsWith(discBounds) && player.getDirection() == Direction.LEFT) {
+                        discDead = disc.takeDamage();
+                        dealtDamage = true;
+                    } else if (playerBounds.topOverlapsWith(discBounds) && player.getDirection() == Direction.UP) {
+                        discDead = disc.takeDamage();
+                        dealtDamage = true;
+                    }
 
-                if (dealtDamage) {
-                    attackSound.play();
-                }
+                    if (dealtDamage) {
+                        attackSound.play();
+                    }
 
-                if (discDead) {
-                    spawnTimeCounter = 0f;
-                    destroyCount++;
-                    if (destroyCount >= 5) {
-                        roundSpawnCount = 0;
-                        round++;
-                        if (round == 2) {
-                            discs.add(new Disc(font));
+                    if (discDead) {
+                        spawnTimeCounter = 0f;
+                        destroyCount++;
+                        if (destroyCount >= 5) {
+                            roundSpawnCount = 0;
+                            round++;
+                            if (round == 2) {
+                                discs.add(new Disc(font));
+                            }
+                            else if (round == 4) {
+                                round = 3;
+                                cg.bossRoundStarted();
+                                bossRound.startBossRound();
+                            }
+                            destroyCount = 0;
                         }
-                        else if (round == 4) {
-                            round = 3;
-                            winCondition();
-                        }
-                        destroyCount = 0;
                     }
                 }
             }
@@ -100,46 +118,63 @@ public class GameScreen implements InputProcessor, Screen {
 
     public void collisions() {
         Iterator<Bounds> it = worldBounds.iterator();
-        Bounds playerBounds = player.getWorldBounds();
-        Bounds overlap = new Bounds();
+        ;Bounds overlap = new Bounds();
         Iterator<Disc> itDisc = discs.iterator();
         while (itDisc.hasNext()) {
             Disc disc = itDisc.next();
             if (disc.isAlive()) {
-                handleIntersectPlayerBounds(disc.getWorldBounds(), playerBounds, overlap);
+                handleBoundsInteraction(disc.getWorldBounds(), player, overlap);
             }
         }
         while (it.hasNext()) {
-            handleIntersectPlayerBounds(it.next(), playerBounds, overlap);
+            handleBoundsInteraction(it.next(), player, overlap);
+        }
+
+        if (bossRound.engaged()) {
+            handleBoundsInteraction(player.getWorldBounds(), bossRound.getBoss(), overlap);
+            it = worldBounds.iterator();
+            Bear bear = bossRound.getBear();
+            if (bear != null) {
+                if (!bear.isStopped()) {
+                    while (it.hasNext()) {
+                        handleBoundsInteraction(it.next(), bossRound.getBear(), overlap);
+                    }
+                }
+                GirlBoss boss = bossRound.getBoss();
+                if (!boss.hasBear()) {
+                    if (bossRound.getBear().getWorldBounds().overlaps(boss.getWorldBounds())) {
+                        boss.setHasBear(true);
+                        bossRound.hideBear();
+                    }
+                }
+            }
         }
     }
 
-    public void handleIntersectPlayerBounds(Bounds bounds, Bounds playerBounds, Bounds overlap) {
-        if (bounds.overlaps(playerBounds)) {
+    public void handleBoundsInteraction(Bounds bounds, GameEntity toCorrect, Bounds overlap) {
+        Bounds toCorrectBounds = toCorrect.getWorldBounds();
+        if (bounds.overlaps(toCorrectBounds)) {
             Vector2 vel = player.getVelocity();
-            if (Intersector.intersectRectangles(bounds, playerBounds, overlap)) {
-                boolean positionCorrected = false;
-                if (playerBounds.leftOverlapsWith(bounds)) {
-                    player.getPosition().x += overlap.width;
-                    positionCorrected = true;
-                } else if (playerBounds.rightOverlapsWith(bounds)) {
-                    player.getPosition().x -= overlap.width;
-                    positionCorrected = true;
+            if (Intersector.intersectRectangles(bounds, toCorrectBounds, overlap)) {
+                boolean collided = false;
+                if (toCorrectBounds.leftOverlapsWith(bounds)) {
+                    toCorrect.getPosition().x += overlap.width;
+                    collided = true;
+                } else if (toCorrectBounds.rightOverlapsWith(bounds)) {
+                    toCorrect.getPosition().x -= overlap.width;
+                    collided = true;
                 }
 
-                if (positionCorrected) {
-                    playerBounds = player.getWorldBounds();
+                if (toCorrectBounds.bottomOverlapsWith(bounds)) {
+                    toCorrect.getPosition().y += overlap.height;
+                    collided = true;
+                } else if (toCorrectBounds.topOverlapsWith(bounds)) {
+                    toCorrect.getPosition().y -= overlap.height;
+                    collided = true;
                 }
-                positionCorrected = false;
-                if (playerBounds.bottomOverlapsWith(bounds)) {
-                    player.getPosition().y += overlap.height;
-                    positionCorrected = true;
-                } else if (playerBounds.topOverlapsWith(bounds)) {
-                    player.getPosition().y -= overlap.height;
-                    positionCorrected = true;
-                }
-                if (positionCorrected) {
-                    playerBounds = player.getWorldBounds();
+
+                if (collided) {
+                    toCorrect.collisionCallback();
                 }
             }
         }
@@ -156,6 +191,14 @@ public class GameScreen implements InputProcessor, Screen {
         stun.dispose();
         attackSound.dispose();
         shockSound.dispose();
+    }
+
+    public BossRound getBossRound() {
+        return bossRound;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     @Override
@@ -183,11 +226,18 @@ public class GameScreen implements InputProcessor, Screen {
                 disc.render(batch);
             }
         }
+
+        if (bossRound.isStarted()) {
+            bossRound.render(batch);
+        }
+
         player.render(batch);
         if (stun != null) {
             stun.render(batch);
         }
-        uiFont.draw(batch, "Round: " + round + " of " + 3, 20, 670);
+        if (!bossRound.isStarted()) {
+            uiFont.draw(batch, "Round: " + round + " of " + 3, 20, 670);
+        }
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         it = discs.iterator();
@@ -195,6 +245,17 @@ public class GameScreen implements InputProcessor, Screen {
             it.next().renderHealth(shapeRenderer);
         }
         shapeRenderer.end();
+
+        /*
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        Bounds pb = player.getWorldBounds();
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.rect(pb.x, pb.y, pb.width, pb.height);
+        if (bossRound.isStarted()) {
+            Bounds bb = bossRound.getBoss().getWorldBounds();
+            shapeRenderer.rect(bb.x, bb.y, bb.width, bb.height);
+        }
+        shapeRenderer.end(); */
 
         if (fade) {
             fadeTimer += dt;
@@ -223,7 +284,7 @@ public class GameScreen implements InputProcessor, Screen {
     public void show() {
         backgroundTexture = new Texture("backdrop.png");
         batch = new SpriteBatch();
-        player = new Player();
+        player = new Player(this);
         worldBounds = new Array<Bounds>() {{
             add(new Bounds(0, 0, 64, Gdx.graphics.getHeight()));
             add(new Bounds(0, Gdx.graphics.getHeight() - 64, Gdx.graphics.getWidth(), 64));
@@ -249,6 +310,10 @@ public class GameScreen implements InputProcessor, Screen {
         gameWon = false;
         attackSound = Gdx.audio.newSound(Gdx.files.internal("hurt.mp3"));
         shockSound = Gdx.audio.newSound(Gdx.files.internal("shock.mp3"));
+        bossRound = new BossRound(this);
+        if (cg.bossRoundStarted) {
+            bossRound.startBossRound();
+        }
         Gdx.input.setInputProcessor(this);
 
         final GameScreen gameScreen = this;
@@ -310,6 +375,14 @@ public class GameScreen implements InputProcessor, Screen {
         }
     }
 
+    public void stunPlayer() {
+        if (!gameOver) {
+            gameOver = true;
+            stun = new Stun(player.position.x - 100, player.position.y);
+            shockSound.play();
+        }
+    }
+
     public void update(float dt) {
         spawnTimeCounter += dt;
         if (restartNextFrame) {
@@ -317,8 +390,11 @@ public class GameScreen implements InputProcessor, Screen {
             fade = true;
         }
 
-        if (!gameOver) {
+        if (!gameOver && !bossRound.isStarted()) {
             spawnBasedOnTimer();
+        }
+
+        if (!gameOver) {
             player.update(dt);
         }
 
@@ -328,11 +404,13 @@ public class GameScreen implements InputProcessor, Screen {
             if (disc.isAlive()) {
                 disc.update(dt);
                 if (disc.triggerStun() && !gameOver) {
-                    gameOver = true;
-                    stun = new Stun(player.position.x - 100, player.position.y);
-                    shockSound.play();
+                    stunPlayer();
                 }
             }
+        }
+
+        if (bossRound.isStarted()) {
+            bossRound.update(dt);
         }
 
         if (stun != null) {

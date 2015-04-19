@@ -9,9 +9,14 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class CoreGame extends Game {
     private Music music;
+    boolean bossRoundStarted = false;
 
     enum FadeMode {
         FADE_IN,FADE_OUT
+    }
+
+    public void bossRoundStarted() {
+        bossRoundStarted = true;
     }
 
     @Override
@@ -46,7 +51,8 @@ public class CoreGame extends Game {
     }
 
     public void startGame() {
-        setScreen(new GameScreen(this));
+        GameScreen gs = new GameScreen(this);
+        setScreen(gs);
     }
 
     public void drawBlackTransparentSquare(ShapeRenderer shapeRenderer, float percent, TransitionCallback callback) {

@@ -17,6 +17,7 @@ public class Player extends GameEntity {
     private TextureRegion currentFrame;
     private boolean attacking;
     private Animation downAttack;
+    private GameScreen gs;
     private Animation rightAttack;
     private Animation upAttack;
     private Animation walkRightAnimation;
@@ -24,19 +25,25 @@ public class Player extends GameEntity {
     private Animation walkDownAnimation;
     private Animation currentAnimation;
     private float stateTime = 0f;
+    private boolean thrownBear;
     private boolean flipX;
     private Direction direction;
     private Bounds attackBounds;
 
-    public Player() {
+    private Animation downPunchAnimation;
+    private Animation rightPunchAnimation;
+    private Animation upPunchAnimation;
+
+    public Player(GameScreen gs) {
         super("player.png");
+        this.gs = gs;
         velocity = new Vector2();
         position.set(Gdx.graphics.getWidth() / 2 - 50, Gdx.graphics.getHeight() / 2 - 50);
         width = 100;
         height = 100;
         bounds.set(20, 0, 50, 100);
 
-        TextureRegion[][] tmp = TextureRegion.split(texture, texture.getWidth() / 4, texture.getHeight() / 3);
+        TextureRegion[][] tmp = TextureRegion.split(texture, texture.getWidth() / 4, texture.getHeight() / 4);
         TextureRegion[] walkRightFrames = new TextureRegion[4];
         walkRightFrames[0] = tmp[0][0];
         walkRightFrames[1] = tmp[1][0];
@@ -65,7 +72,7 @@ public class Player extends GameEntity {
 
         TextureRegion[] attackDownFrames = new TextureRegion[2];
         attackDownFrames[0] = tmp[1][3];
-        attackDownFrames[1] = tmp[0][1];
+        attackDownFrames[1] = tmp[0][2];
         downAttack = new Animation(0.1f, attackDownFrames);
 
         TextureRegion[] attackRightFrames = new TextureRegion[2];
@@ -77,6 +84,22 @@ public class Player extends GameEntity {
         attacking = false;
         direction = Direction.RIGHT;
         attackBounds = new Bounds();
+        thrownBear = false;
+
+        TextureRegion[] attackUpUA = new TextureRegion[2];
+        attackUpUA[0] = tmp[3][1];
+        attackUpUA[1] = tmp[0][1];
+        upPunchAnimation = new Animation(0.1f, attackUpUA);
+
+        TextureRegion[] attackDownUA = new TextureRegion[2];
+        attackDownUA[0] = tmp[3][0];
+        attackDownUA[1] = tmp[0][2];
+        downPunchAnimation = new Animation(0.1f, attackDownUA);
+
+        TextureRegion[] attackRightUA = new TextureRegion[2];
+        attackRightUA[0] = tmp[3][2];
+        attackRightUA[1] = tmp[0][0];
+        rightPunchAnimation = new Animation(0.1f, attackRightUA);
     }
 
     public Bounds getAttackBounds() {
@@ -110,6 +133,19 @@ public class Player extends GameEntity {
         }
         else {
             batch.draw(currentFrame, position.x-this.width, position.y, width, height);
+        }
+    }
+
+    public void resetAnimationPostAttack() {
+        attacking = false;
+        if (direction == Direction.RIGHT || direction == Direction.LEFT) {
+            currentAnimation = walkRightAnimation;
+        }
+        else if (direction == Direction.DOWN) {
+            currentAnimation = walkDownAnimation;
+        }
+        else if (direction == Direction.UP) {
+            currentAnimation = walkUpAnimation;
         }
     }
 
@@ -148,33 +184,45 @@ public class Player extends GameEntity {
             velocity.y = 0;
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+        if ((Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))) {
             if (!attacking) {
-                if (direction == Direction.RIGHT || direction == Direction.LEFT) {
-                    currentAnimation = rightAttack;
+                if (thrownBear) {
+                    if (direction == Direction.RIGHT || direction == Direction.LEFT) {
+                        currentAnimation = rightPunchAnimation;
+                    } else if (direction == Direction.DOWN) {
+                        currentAnimation = downPunchAnimation;
+                    } else if (direction == Direction.UP) {
+                        currentAnimation = upPunchAnimation;
+                    }
                 }
-                else if (direction == Direction.DOWN) {
-                    currentAnimation = downAttack;
-                }
-                else if (direction == Direction.UP) {
-                    currentAnimation = upAttack;
+                else {
+                    if (direction == Direction.RIGHT || direction == Direction.LEFT) {
+                        currentAnimation = rightAttack;
+                    } else if (direction == Direction.DOWN) {
+                        currentAnimation = downAttack;
+                    } else if (direction == Direction.UP) {
+                        currentAnimation = upAttack;
+                    }
                 }
                 stateTime = 0;
                 attacking = true;
             }
         }
 
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && gs.getBossRound().engaged() && !thrownBear) {
+            gs.getBossRound().throwBear(direction);
+            thrownBear = true;
+        }
+
         if (attacking) {
-            if (rightAttack.isAnimationFinished(stateTime) || downAttack.isAnimationFinished(stateTime) || upAttack.isAnimationFinished(stateTime)) {
-                attacking = false;
-                if (direction == Direction.RIGHT || direction == Direction.LEFT) {
-                    currentAnimation = walkRightAnimation;
+            if (thrownBear) {
+                if (rightPunchAnimation.isAnimationFinished(stateTime) || downPunchAnimation.isAnimationFinished(stateTime) || upPunchAnimation.isAnimationFinished(stateTime)) {
+                    resetAnimationPostAttack();
                 }
-                else if (direction == Direction.DOWN) {
-                    currentAnimation = walkDownAnimation;
-                }
-                else if (direction == Direction.UP) {
-                    currentAnimation = walkUpAnimation;
+            }
+            else {
+                if (rightAttack.isAnimationFinished(stateTime) || downAttack.isAnimationFinished(stateTime) || upAttack.isAnimationFinished(stateTime)) {
+                    resetAnimationPostAttack();
                 }
             }
         }
