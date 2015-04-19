@@ -24,6 +24,7 @@ public class GameScreen implements Screen {
     private CoreGame cg;
     private Disc disc;
     private BitmapFont font;
+    private BitmapFont uiFont;
     private boolean gameOver;
     private ShapeRenderer shapeRenderer;
     private float spawnTimeCounter;
@@ -32,6 +33,7 @@ public class GameScreen implements Screen {
     private boolean restartNextFrame;
     private Array<Bounds> worldBounds;
     private float attackTimer;
+    private int round;
 
     public GameScreen(CoreGame cg) {
         this.cg = cg;
@@ -99,6 +101,7 @@ public class GameScreen implements Screen {
         if (stun != null) {
             stun.render(batch);
         }
+        uiFont.draw(batch, "Round: " + round + " of " + 3, 20, 670);
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         disc.renderHealth(shapeRenderer);
@@ -127,6 +130,7 @@ public class GameScreen implements Screen {
             add(new Bounds(0, -64, Gdx.graphics.getWidth(), 64));
         }};
         font = new BitmapFont(Gdx.files.internal("font.fnt"), Gdx.files.internal("font.png"), false);
+        uiFont = new BitmapFont(Gdx.files.internal("white-ui.fnt"), Gdx.files.internal("white-ui.png"), false);
         disc = new Disc(font);
         spawnTimeCounter = 0;
         attackTimer = 0;
@@ -134,6 +138,7 @@ public class GameScreen implements Screen {
         stun = null;
         gameOver = false;
         restartNextFrame = false;
+        round = 1;
     }
 
     public void spawnDisc() {
