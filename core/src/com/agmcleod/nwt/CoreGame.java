@@ -2,15 +2,13 @@ package com.agmcleod.nwt;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class CoreGame extends Game {
-    SpriteBatch batch;
-    Texture img;
+    private Music music;
 
     enum FadeMode {
         FADE_IN,FADE_OUT
@@ -18,7 +16,17 @@ public class CoreGame extends Game {
 
     @Override
     public void create () {
+        music = Gdx.audio.newMusic(Gdx.files.internal("ld32track.mp3"));
         setScreen(new TitleScreen(this));
+        music.setLooping(true);
+        music.setVolume(0.7f);
+        music.play();
+    }
+
+    @Override
+    public void dispose() {
+        music.stop();
+        music.dispose();
     }
 
     public void gotoEndScreen() {
