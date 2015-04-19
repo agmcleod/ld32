@@ -13,6 +13,10 @@ public class CoreGame extends Game {
 
     @Override
     public void create () {
+        setScreen(new TitleScreen(this));
+    }
+
+    public void startGame() {
         setScreen(new GameScreen(this));
     }
 }
