@@ -29,6 +29,10 @@ public class CoreGame extends Game {
         music.dispose();
     }
 
+    public Music getMusic() {
+        return music;
+    }
+
     public void gotoEndScreen() {
         setScreen(new EndScreen(this));
     }
