@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
  */
 public class TitleScreen implements Screen {
     private CoreGame cg;
+    private TransitionCallback callback;
     private SpriteBatch batch;
     private Texture background;
     private boolean fade;
@@ -29,6 +30,12 @@ public class TitleScreen implements Screen {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         fade = false;
+        callback = new TransitionCallback() {
+            @Override
+            public void callback() {
+                cg.startGame();
+            }
+        };
     }
 
     @Override
@@ -46,10 +53,7 @@ public class TitleScreen implements Screen {
 
         if (fade) {
             fadeTimer += delta;
-            cg.drawBlackTransparentSquare(shapeRenderer, fadeTimer / 0.5f);
-            if (fadeTimer >= 0.5f) {
-                this.cg.startGame();
-            }
+            cg.drawBlackTransparentSquare(shapeRenderer, fadeTimer / 0.5f, callback);
         }
     }
 

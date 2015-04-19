@@ -29,7 +29,7 @@ public class CoreGame extends Game {
         setScreen(new GameScreen(this));
     }
 
-    public void drawBlackTransparentSquare(ShapeRenderer shapeRenderer, float percent) {
+    public void drawBlackTransparentSquare(ShapeRenderer shapeRenderer, float percent, TransitionCallback callback) {
         Gdx.gl.glEnable(GL20.GL_BLEND);
 
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -40,5 +40,9 @@ public class CoreGame extends Game {
         shapeRenderer.end();
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        if (percent > 1.0f || percent < 0f) {
+            callback.callback();
+        }
     }
 }

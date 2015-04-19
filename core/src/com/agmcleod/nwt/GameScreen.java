@@ -21,6 +21,7 @@ public class GameScreen implements Screen {
     private float attackTimer;
     private Texture backgroundTexture;
     private SpriteBatch batch;
+    TransitionCallback callback;
     private CoreGame cg;
     private int destroyCount;
     private Array<Disc> discs;
@@ -134,19 +135,7 @@ public class GameScreen implements Screen {
             else {
                 percent = fadeTimer / 0.5f;
             }
-            cg.drawBlackTransparentSquare(shapeRenderer, percent);
-            if (percent >= 1f) {
-                fade = false;
-                if (fadeMode == CoreGame.FadeMode.FADE_OUT) {
-                    if (gameWon) {
-                        cg.gotoEndScreen();
-                    }
-                    else {
-                        fadeMode = CoreGame.FadeMode.FADE_IN;
-                        cg.setScreen(this);
-                    }
-                }
-            }
+            cg.drawBlackTransparentSquare(shapeRenderer, percent, callback);
         }
     }
 
@@ -186,6 +175,22 @@ public class GameScreen implements Screen {
         fadeTimer = 0;
         fade = false;
         gameWon = false;
+        final GameScreen gameScreen = this;
+        callback = new TransitionCallback() {
+            @Override
+            public void callback() {
+                fade = false;
+                if (fadeMode == CoreGame.FadeMode.FADE_OUT) {
+                    if (gameWon) {
+                        cg.gotoEndScreen();
+                    }
+                    else {
+                        fadeMode = CoreGame.FadeMode.FADE_IN;
+                        cg.setScreen(gameScreen);
+                    }
+                }
+            }
+        };
     }
 
     public void spawnDisc() {
