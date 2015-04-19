@@ -73,7 +73,7 @@ public class Player extends GameEntity {
         rightAttack = new Animation(0.1f, attackRightFrames);
 
         currentAnimation = walkRightAnimation;
-        attacking = true;
+        attacking = false;
         direction = Direction.RIGHT;
         attackBounds = new Bounds();
     }
@@ -147,7 +147,7 @@ public class Player extends GameEntity {
             velocity.y = 0;
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.ENTER) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
             if (!attacking) {
                 if (direction == Direction.RIGHT || direction == Direction.LEFT) {
                     currentAnimation = rightAttack;

@@ -30,6 +30,7 @@ public class Stun {
         frames[3] = tmp[1][1];
         state = 0f;
         animation = new Animation(0.1f, frames);
+        currentFrame = animation.getKeyFrame(state, false);
     }
 
     public void dispose() {
