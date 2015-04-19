@@ -3,6 +3,7 @@ package com.agmcleod.nwt;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -19,6 +20,7 @@ import java.util.Iterator;
  * Created by aaronmcleod on 15-04-17.
  */
 public class GameScreen implements InputProcessor, Screen {
+    private Sound attackSound;
     private float attackTimer;
     private Texture backgroundTexture;
     private SpriteBatch batch;
@@ -46,6 +48,54 @@ public class GameScreen implements InputProcessor, Screen {
     public GameScreen(CoreGame cg) {
         this.cg = cg;
         fadeMode = CoreGame.FadeMode.FADE_IN;
+    }
+
+    public void attemptAttack() {
+        attackTimer = 0f;
+        Bounds playerBounds = player.getAttackBounds();
+        Iterator<Disc> it = discs.iterator();
+        while (it.hasNext()) {
+            Disc disc = it.next();
+            Bounds discBounds = disc.getHitBox();
+            if (disc.isAlive() && discBounds.overlaps(playerBounds)) {
+                boolean discDead = false;
+                boolean dealtDamage = false;
+                if (playerBounds.bottomOverlapsWith(discBounds) && player.getDirection() == Direction.DOWN) {
+                    discDead = disc.takeDamage();
+                    dealtDamage = true;
+                } else if (playerBounds.rightOverlapsWith(discBounds) && player.getDirection() == Direction.RIGHT) {
+                    discDead = disc.takeDamage();
+                    dealtDamage = true;
+                } else if (playerBounds.leftOverlapsWith(discBounds) && player.getDirection() == Direction.LEFT) {
+                    discDead = disc.takeDamage();
+                    dealtDamage = true;
+                } else if (playerBounds.topOverlapsWith(discBounds) && player.getDirection() == Direction.UP) {
+                    discDead = disc.takeDamage();
+                    dealtDamage = true;
+                }
+
+                if (dealtDamage) {
+                    attackSound.play();
+                }
+
+                if (discDead) {
+                    spawnTimeCounter = 0f;
+                    destroyCount++;
+                    if (destroyCount >= 5) {
+                        roundSpawnCount = 0;
+                        round++;
+                        if (round == 2) {
+                            discs.add(new Disc(font));
+                        }
+                        else if (round == 4) {
+                            round = 3;
+                            winCondition();
+                        }
+                        destroyCount = 0;
+                    }
+                }
+            }
+        }
     }
 
     public void collisions() {
@@ -109,7 +159,6 @@ public class GameScreen implements InputProcessor, Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         batch.begin();
         batch.draw(backgroundTexture, 0, 0);
-        player.render(batch);
         Iterator<Disc> it = discs.iterator();
         while (it.hasNext()) {
             Disc disc = it.next();
@@ -117,6 +166,7 @@ public class GameScreen implements InputProcessor, Screen {
                 disc.render(batch);
             }
         }
+        player.render(batch);
         if (stun != null) {
             stun.render(batch);
         }
@@ -179,8 +229,10 @@ public class GameScreen implements InputProcessor, Screen {
         fadeTimer = 0;
         fade = false;
         gameWon = false;
-        final GameScreen gameScreen = this;
+        attackSound = Gdx.audio.newSound(Gdx.files.internal("hurt.mp3"));
         Gdx.input.setInputProcessor(this);
+
+        final GameScreen gameScreen = this;
         callback = new TransitionCallback() {
             @Override
             public void callback() {
@@ -269,42 +321,7 @@ public class GameScreen implements InputProcessor, Screen {
         }
 
         if (player.isAttacking() && attackTimer > 0.2) {
-            attackTimer = 0f;
-            Bounds playerBounds = player.getAttackBounds();
-            it = discs.iterator();
-            while (it.hasNext()) {
-                Disc disc = it.next();
-                Bounds discBounds = disc.getHitBox();
-                if (disc.isAlive() && discBounds.overlaps(playerBounds)) {
-                    boolean discDead = false;
-                    if (playerBounds.bottomOverlapsWith(discBounds) && player.getDirection() == Direction.DOWN) {
-                        discDead = disc.takeDamage();
-                    } else if (playerBounds.rightOverlapsWith(discBounds) && player.getDirection() == Direction.RIGHT) {
-                        discDead = disc.takeDamage();
-                    } else if (playerBounds.leftOverlapsWith(discBounds) && player.getDirection() == Direction.LEFT) {
-                        discDead = disc.takeDamage();
-                    } else if (playerBounds.topOverlapsWith(discBounds) && player.getDirection() == Direction.UP) {
-                        discDead = disc.takeDamage();
-                    }
-
-                    if (discDead) {
-                        spawnTimeCounter = 0f;
-                        destroyCount++;
-                        if (destroyCount >= 5) {
-                            roundSpawnCount = 0;
-                            round++;
-                            if (round == 2) {
-                                discs.add(new Disc(font));
-                            }
-                            else if (round == 4) {
-                                round = 3;
-                                winCondition();
-                            }
-                            destroyCount = 0;
-                        }
-                    }
-                }
-            }
+            attemptAttack();
         }
 
         attackTimer += dt;
