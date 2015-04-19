@@ -157,20 +157,23 @@ public class GameScreen implements InputProcessor, Screen {
             Vector2 vel = player.getVelocity();
             if (Intersector.intersectRectangles(bounds, toCorrectBounds, overlap)) {
                 boolean collided = false;
-                if (toCorrectBounds.leftOverlapsWith(bounds)) {
-                    toCorrect.getPosition().x += overlap.width;
-                    collided = true;
-                } else if (toCorrectBounds.rightOverlapsWith(bounds)) {
-                    toCorrect.getPosition().x -= overlap.width;
-                    collided = true;
+                if (overlap.width < overlap.height) {
+                    if (toCorrectBounds.leftOverlapsWith(bounds)) {
+                        toCorrect.getPosition().x += overlap.width;
+                        collided = true;
+                    } else if (toCorrectBounds.rightOverlapsWith(bounds)) {
+                        toCorrect.getPosition().x -= overlap.width;
+                        collided = true;
+                    }
                 }
-
-                if (toCorrectBounds.bottomOverlapsWith(bounds)) {
-                    toCorrect.getPosition().y += overlap.height;
-                    collided = true;
-                } else if (toCorrectBounds.topOverlapsWith(bounds)) {
-                    toCorrect.getPosition().y -= overlap.height;
-                    collided = true;
+                else {
+                    if (toCorrectBounds.bottomOverlapsWith(bounds)) {
+                        toCorrect.getPosition().y += overlap.height;
+                        collided = true;
+                    } else if (toCorrectBounds.topOverlapsWith(bounds)) {
+                        toCorrect.getPosition().y -= overlap.height;
+                        collided = true;
+                    }
                 }
 
                 if (collided) {
