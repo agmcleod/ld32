@@ -40,6 +40,7 @@ public class Disc extends GameEntity {
         health = 5;
         hitBox = new Bounds();
         this.font = font;
+        stunTimer = 4f;
     }
 
     public Bounds getHitBox() {
@@ -106,6 +107,9 @@ public class Disc extends GameEntity {
     public void update(float dt) {
         if (isAlive() && appearAnimation.isAnimationFinished(animationState)) {
             stunTimer -= dt;
+            if (stunTimer < 0) {
+                stunTimer = 0;
+            }
         }
         animationState += dt;
         currentFrame = appearAnimation.getKeyFrame(animationState, false);

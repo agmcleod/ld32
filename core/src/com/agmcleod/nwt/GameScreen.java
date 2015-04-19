@@ -21,13 +21,21 @@ import java.util.Iterator;
 public class GameScreen implements Screen {
     private Texture backgroundTexture;
     private SpriteBatch batch;
+    private CoreGame cg;
     private Disc disc;
     private BitmapFont font;
+    private boolean gameOver;
     private ShapeRenderer shapeRenderer;
     private float spawnTimeCounter;
     private Player player;
+    private Stun stun;
+    private boolean restartNextFrame;
     private Array<Bounds> worldBounds;
     private float attackTimer;
+
+    public GameScreen(CoreGame cg) {
+        this.cg = cg;
+    }
 
     public void collisions() {
         Iterator<Bounds> it = worldBounds.iterator();
@@ -61,9 +69,9 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         backgroundTexture.dispose();
-        batch.dispose();
         player.dispose();
         font.dispose();
+        batch.dispose();
     }
 
     @Override
@@ -87,6 +95,9 @@ public class GameScreen implements Screen {
         player.render(batch);
         if (disc.isAlive()) {
             disc.render(batch);
+        }
+        if (stun != null) {
+            stun.render(batch);
         }
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -120,6 +131,9 @@ public class GameScreen implements Screen {
         spawnTimeCounter = 0;
         attackTimer = 0;
         shapeRenderer = new ShapeRenderer();
+        stun = null;
+        gameOver = false;
+        restartNextFrame = false;
     }
 
     public void spawnDisc() {
@@ -131,13 +145,23 @@ public class GameScreen implements Screen {
 
     public void update(float dt) {
         spawnTimeCounter += dt;
+        if (restartNextFrame) {
+            cg.setScreen(this);
+        }
         if (spawnTimeCounter > 1.0f && !disc.isAlive()) {
             spawnDisc();
         }
         if (disc.isAlive()) {
             disc.update(dt);
         }
-        player.update(dt);
+        if (!gameOver) {
+            player.update(dt);
+        }
+
+        if (stun != null) {
+            restartNextFrame = stun.update(dt);
+        }
+
         if (player.isAttacking() && attackTimer > 0.2) {
             attackTimer = 0f;
             Bounds playerBounds = player.getAttackBounds();
@@ -158,6 +182,12 @@ public class GameScreen implements Screen {
                     spawnTimeCounter = 0f;
                 }
             }
+        }
+
+        if (disc.triggerStun() && !gameOver) {
+            gameOver = true;
+            stun = new Stun(player.position.x - 100, player.position.y);
+            stun.update(dt);
         }
 
         attackTimer += dt;
