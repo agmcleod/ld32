@@ -219,6 +219,13 @@ public class GameScreen implements InputProcessor, Screen {
 
     }
 
+    public int randomCoordinateForDisc(int max) {
+        // random of 0 to 3 or 4 (max value)
+        // then position in the middle of the tile. Tiles are 128 wide, subtract disc dimensions and divide
+        // by 2. This should really be refactored to use constants.
+        return MathUtils.random(0, max) * 128 + ((128 - 80) / 2);
+    }
+
     @Override
     public void render(float dt) {
         update(dt);
@@ -299,10 +306,10 @@ public class GameScreen implements InputProcessor, Screen {
         batch = new SpriteBatch();
         player = new Player(this);
         worldBounds = new Array<Bounds>() {{
-            add(new Bounds(0, 0, 64, Gdx.graphics.getHeight()));
-            add(new Bounds(0, Gdx.graphics.getHeight() - 64, Gdx.graphics.getWidth(), 64));
-            add(new Bounds(Gdx.graphics.getWidth(), 0, 64, Gdx.graphics.getHeight()));
-            add(new Bounds(0, -64, Gdx.graphics.getWidth(), 64));
+            add(new Bounds(0, 0, 64, Gdx.graphics.getHeight())); // left bounds
+            add(new Bounds(0, Gdx.graphics.getHeight() - 64, Gdx.graphics.getWidth(), 64)); // top bounds
+            add(new Bounds(Gdx.graphics.getWidth() - 64, 0, 64, Gdx.graphics.getHeight())); // right bounds
+            add(new Bounds(0, -64, Gdx.graphics.getWidth(), 64)); // bottom bounds
         }};
         startDialogue = new Texture("startdialogue.png");
         font = new BitmapFont(Gdx.files.internal("font.fnt"), Gdx.files.internal("font.png"), false);
@@ -360,8 +367,8 @@ public class GameScreen implements InputProcessor, Screen {
         int x, y;
         boolean spotAvailable = false;
         do {
-            x = MathUtils.random(0, 4) * 128 + ((128 - 80) / 2) + 64;
-            y = MathUtils.random(0, 4) * 128 + ((128 - 80) / 2);
+            x = randomCoordinateForDisc(3) + 64;
+            y = randomCoordinateForDisc(4);
 
             Iterator<Disc> it = discs.iterator();
             while (it.hasNext()) {

@@ -32,7 +32,7 @@ public class GirlBoss extends GameEntity {
         width = 80;
         height = 80;
         bounds.set(20, 0, 40, 80);
-        position.set(Gdx.graphics.getWidth() - 100, Gdx.graphics.getHeight() - bounds.getHeight() - 120);
+        position.set(Gdx.graphics.getWidth() - 180, MathUtils.random(0, Gdx.graphics.getHeight() - bounds.getHeight() - 120));
         stateTime = 0f;
         hasBear = false;
 
