@@ -97,6 +97,7 @@ public class GirlBoss extends GameEntity {
         if (hasBear) {
             return;
         }
+        currentFrame = currentAnimation.getKeyFrame(stateTime, true);
         Bounds b = getWorldBounds();
 
         if (b.x != target.x || b.y != target.y) {

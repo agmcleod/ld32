@@ -1,6 +1,7 @@
 package com.agmcleod.nwt;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Intersector;
@@ -13,8 +14,9 @@ public class BossRound {
     private Bear bear;
     private GirlBoss boss;
     private boolean bossDefeated;
+    private Texture dialogue1;
+    private Texture dialogue2;
     private GameScreen gs;
-    private BitmapFont speechFont;
     private float speechTimeout;
     private float winTimeout = 0;
     private boolean started;
@@ -23,15 +25,17 @@ public class BossRound {
         this.gs = gs;
         started = false;
         boss = new GirlBoss(this);
-        speechFont = new BitmapFont(Gdx.files.internal("blackspeech.fnt"), Gdx.files.internal("blackspeech.png"), false);
         speechTimeout = 0f;
         bear = null;
         bossDefeated = false;
+        dialogue1 = new Texture("bossleveld1.png");
+        dialogue2 = new Texture("bossleveld2.png");
     }
 
     public void dispose() {
         boss.dispose();
-        speechFont.dispose();
+        dialogue1.dispose();
+        dialogue2.dispose();
     }
 
     public boolean engaged() {
@@ -61,11 +65,10 @@ public class BossRound {
     public void render(SpriteBatch batch) {
         boss.render(batch);
         if (!engaged()) {
-            speechFont.draw(batch, "Give me that bear!", boss.position.x - 100, boss.position.y + boss.height - 20);
+            batch.draw(dialogue1, Gdx.graphics.getWidth() / 2 - dialogue2.getWidth() / 2, 500);
         }
         if (bossDefeated) {
-            speechFont.draw(batch, "No! You have", boss.position.x - 100, boss.position.y + boss.height - 20);
-            speechFont.draw(batch, "beat me!", boss.position.x - 100, boss.position.y + boss.height - 40);
+            batch.draw(dialogue2, Gdx.graphics.getWidth() / 2 - dialogue2.getWidth() / 2, 500);
         }
 
         if (bear != null && bear.isAlive()) {

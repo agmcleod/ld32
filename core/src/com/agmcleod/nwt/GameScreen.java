@@ -22,6 +22,8 @@ import java.util.Iterator;
  * Created by aaronmcleod on 15-04-17.
  */
 public class GameScreen implements InputProcessor, Screen {
+    private final float MAX_DIALOGUE_TIMER = 2f;
+
     private Sound attackSound;
     private float attackTimer;
     private Texture backgroundTexture;
@@ -42,6 +44,8 @@ public class GameScreen implements InputProcessor, Screen {
     private ShapeRenderer shapeRenderer;
     private Sound shockSound;
     private float spawnTimeCounter;
+    private Texture startDialogue;
+    private float startDialogueTimer;
     private Stun stun;
     private boolean restartNextFrame;
     private int round;
@@ -194,6 +198,7 @@ public class GameScreen implements InputProcessor, Screen {
         stun.dispose();
         attackSound.dispose();
         shockSound.dispose();
+        startDialogue.dispose();
     }
 
     public BossRound getBossRound() {
@@ -235,6 +240,11 @@ public class GameScreen implements InputProcessor, Screen {
         }
 
         player.render(batch);
+
+        if (startDialogueTimer < MAX_DIALOGUE_TIMER) {
+            batch.draw(startDialogue, Gdx.graphics.getWidth() / 2 - startDialogue.getWidth() / 2, 500);
+        }
+
         if (stun != null) {
             stun.render(batch);
         }
@@ -294,6 +304,7 @@ public class GameScreen implements InputProcessor, Screen {
             add(new Bounds(Gdx.graphics.getWidth(), 0, 64, Gdx.graphics.getHeight()));
             add(new Bounds(0, -64, Gdx.graphics.getWidth(), 64));
         }};
+        startDialogue = new Texture("startdialogue.png");
         font = new BitmapFont(Gdx.files.internal("font.fnt"), Gdx.files.internal("font.png"), false);
         uiFont = new BitmapFont(Gdx.files.internal("white-ui.fnt"), Gdx.files.internal("white-ui.png"), false);
         spawnTimeCounter = 0;
@@ -316,6 +327,10 @@ public class GameScreen implements InputProcessor, Screen {
         bossRound = new BossRound(this);
         if (cg.bossRoundStarted) {
             bossRound.startBossRound();
+            startDialogueTimer = MAX_DIALOGUE_TIMER;
+        }
+        else {
+            startDialogueTimer = 0f;
         }
         Gdx.input.setInputProcessor(this);
 
@@ -388,6 +403,7 @@ public class GameScreen implements InputProcessor, Screen {
 
     public void update(float dt) {
         spawnTimeCounter += dt;
+        startDialogueTimer += dt;
         if (restartNextFrame) {
             fadeMode = CoreGame.FadeMode.FADE_OUT;
             fade = true;
