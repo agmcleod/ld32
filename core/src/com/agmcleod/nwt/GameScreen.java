@@ -35,9 +35,10 @@ public class GameScreen implements InputProcessor, Screen {
     private BitmapFont uiFont;
     private boolean gameOver;
     private boolean gameWon;
-    private ShapeRenderer shapeRenderer;
-    private float spawnTimeCounter;
     private Player player;
+    private ShapeRenderer shapeRenderer;
+    private Sound shockSound;
+    private float spawnTimeCounter;
     private Stun stun;
     private boolean restartNextFrame;
     private int round;
@@ -139,6 +140,8 @@ public class GameScreen implements InputProcessor, Screen {
         shapeRenderer.dispose();
         uiFont.dispose();
         stun.dispose();
+        attackSound.dispose();
+        shockSound.dispose();
     }
 
     @Override
@@ -230,6 +233,7 @@ public class GameScreen implements InputProcessor, Screen {
         fade = false;
         gameWon = false;
         attackSound = Gdx.audio.newSound(Gdx.files.internal("hurt.mp3"));
+        shockSound = Gdx.audio.newSound(Gdx.files.internal("shock.mp3"));
         Gdx.input.setInputProcessor(this);
 
         final GameScreen gameScreen = this;
@@ -311,6 +315,7 @@ public class GameScreen implements InputProcessor, Screen {
                 if (disc.triggerStun() && !gameOver) {
                     gameOver = true;
                     stun = new Stun(player.position.x - 100, player.position.y);
+                    shockSound.play();
                 }
             }
         }
