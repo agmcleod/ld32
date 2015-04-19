@@ -2,7 +2,7 @@
 
 1. ~~3 levels, with varying difficulty. Multiple spawn at once, etc.~~
 2. ~~Music & Sound effects.~~
-3. ~~End sceen~~
+3. ~~End screen~~
 4. ~~Boss level~~
 5. ~~Fix Collision~~
 6. Boss art for title
