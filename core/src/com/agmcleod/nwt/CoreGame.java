@@ -32,6 +32,10 @@ public class CoreGame extends Game {
         return music;
     }
 
+    public void gotoInstructionsScreen() {
+        setScreen(new InstructionsScreen(this));
+    }
+
     public void gotoTitleScreen() {
         music.play();
         setScreen(new TitleScreen(this));
