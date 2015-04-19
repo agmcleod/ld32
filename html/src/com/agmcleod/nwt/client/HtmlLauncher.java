@@ -7,13 +7,13 @@ import com.agmcleod.nwt.CoreGame;
 
 public class HtmlLauncher extends GwtApplication {
 
-        @Override
-        public GwtApplicationConfiguration getConfig () {
-                return new GwtApplicationConfiguration(480, 320);
-        }
+    @Override
+    public GwtApplicationConfiguration getConfig () {
+        return new GwtApplicationConfiguration(704, 704);
+    }
 
-        @Override
-        public ApplicationListener getApplicationListener () {
-                return new CoreGame();
-        }
+    @Override
+    public ApplicationListener getApplicationListener () {
+        return new CoreGame();
+    }
 }
