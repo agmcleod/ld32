@@ -10,48 +10,66 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 /**
- * Created by aaronmcleod on 15-04-18.
+ * Created by aaronmcleod on 15-04-19.
  */
-public class TitleScreen implements InputProcessor, Screen {
+public class SplashScreen implements InputProcessor, Screen {
+    private TransitionCallback fadeInCallback;
+    private TransitionCallback fadeOutCallback;
     private CoreGame cg;
-    private TransitionCallback callback;
     private SpriteBatch batch;
     private Texture background;
     private boolean fade;
+    private CoreGame.FadeMode fadeMode;
     private ShapeRenderer shapeRenderer;
+    private Texture texture;
     private float fadeTimer = 0;
 
-    public TitleScreen(CoreGame cg) {
+    public SplashScreen(CoreGame cg) {
         this.cg = cg;
+        fadeMode = CoreGame.FadeMode.FADE_IN;
     }
-
     @Override
     public void show() {
-        background = new Texture("intro.png");
-        batch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer();
-        fade = false;
-        callback = new TransitionCallback() {
+        fade = true;
+        fadeTimer = 0f;
+        fadeInCallback = new TransitionCallback() {
             @Override
             public void callback() {
-                cg.startGame();
+                fade = false;
+                fadeTimer = 0f;
             }
         };
+
+        fadeOutCallback = new TransitionCallback() {
+            @Override
+            public void callback() {
+                fade = false;
+                cg.gotoTitleScreen();
+            }
+        };
+        batch = new SpriteBatch();
+        shapeRenderer = new ShapeRenderer();
+        texture = new Texture("splash.png");
         Gdx.input.setInputProcessor(this);
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.7f, 0.7f, 0.7f, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         batch.begin();
-        batch.draw(background, 0, 0);
+        batch.draw(texture, 0, 0);
         batch.end();
 
         if (fade) {
             fadeTimer += delta;
-            cg.drawBlackTransparentSquare(shapeRenderer, fadeTimer / 0.5f, callback);
+            if (fadeMode == CoreGame.FadeMode.FADE_IN) {
+                cg.drawBlackTransparentSquare(shapeRenderer, 1f - (fadeTimer / 0.5f), fadeInCallback);
+            }
+            else {
+                cg.drawBlackTransparentSquare(shapeRenderer, fadeTimer / 0.5f, fadeOutCallback);
+            }
         }
     }
 
@@ -77,7 +95,7 @@ public class TitleScreen implements InputProcessor, Screen {
 
     @Override
     public void dispose() {
-        background.dispose();
+        texture.dispose();
         batch.dispose();
         shapeRenderer.dispose();
     }
@@ -105,6 +123,7 @@ public class TitleScreen implements InputProcessor, Screen {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         fade = true;
+        fadeMode = CoreGame.FadeMode.FADE_OUT;
         return false;
     }
 

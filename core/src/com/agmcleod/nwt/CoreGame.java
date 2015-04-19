@@ -17,10 +17,9 @@ public class CoreGame extends Game {
     @Override
     public void create () {
         music = Gdx.audio.newMusic(Gdx.files.internal("ld32track.mp3"));
-        setScreen(new TitleScreen(this));
+        setScreen(new SplashScreen(this));
         music.setLooping(true);
         music.setVolume(0.7f);
-        music.play();
     }
 
     @Override
@@ -31,6 +30,11 @@ public class CoreGame extends Game {
 
     public Music getMusic() {
         return music;
+    }
+
+    public void gotoTitleScreen() {
+        music.play();
+        setScreen(new TitleScreen(this));
     }
 
     public void gotoEndScreen() {

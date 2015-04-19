@@ -1,6 +1,7 @@
 package com.agmcleod.nwt;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -17,7 +18,7 @@ import java.util.Iterator;
 /**
  * Created by aaronmcleod on 15-04-17.
  */
-public class GameScreen implements Screen {
+public class GameScreen implements InputProcessor, Screen {
     private float attackTimer;
     private Texture backgroundTexture;
     private SpriteBatch batch;
@@ -37,8 +38,10 @@ public class GameScreen implements Screen {
     private Player player;
     private Stun stun;
     private boolean restartNextFrame;
-    private Array<Bounds> worldBounds;
     private int round;
+    private int roundSpawnCount;
+    private Array<Bounds> worldBounds;
+
 
     public GameScreen(CoreGame cg) {
         this.cg = cg;
@@ -169,6 +172,7 @@ public class GameScreen implements Screen {
         gameOver = false;
         restartNextFrame = false;
         round = 1;
+        roundSpawnCount = 0;
         destroyCount = 0;
         discs = new Array<Disc>();
         discs.add(new Disc(font));
@@ -176,6 +180,7 @@ public class GameScreen implements Screen {
         fade = false;
         gameWon = false;
         final GameScreen gameScreen = this;
+        Gdx.input.setInputProcessor(this);
         callback = new TransitionCallback() {
             @Override
             public void callback() {
@@ -216,10 +221,11 @@ public class GameScreen implements Screen {
         Disc disc = discs.get(i);
         disc.getPosition().set(x, y);
         disc.setAlive(true);
+        roundSpawnCount++;
     }
 
     public void spawnBasedOnTimer() {
-        if (discs.size > 0) {
+        if (discs.size > 0 && roundSpawnCount < 5) {
             Disc disc = discs.get(0);
             if (spawnTimeCounter > 1.0f && !disc.isAlive()) {
                 spawnDisc();
@@ -250,10 +256,10 @@ public class GameScreen implements Screen {
             Disc disc = it.next();
             if (disc.isAlive()) {
                 disc.update(dt);
-            }
-            if (disc.triggerStun() && !gameOver) {
-                gameOver = true;
-                stun = new Stun(player.position.x - 100, player.position.y);
+                if (disc.triggerStun() && !gameOver) {
+                    gameOver = true;
+                    stun = new Stun(player.position.x - 100, player.position.y);
+                }
             }
         }
 
@@ -269,7 +275,7 @@ public class GameScreen implements Screen {
             while (it.hasNext()) {
                 Disc disc = it.next();
                 Bounds discBounds = disc.getHitBox();
-                if (discBounds.overlaps(playerBounds)) {
+                if (disc.isAlive() && discBounds.overlaps(playerBounds)) {
                     boolean discDead = false;
                     if (playerBounds.bottomOverlapsWith(discBounds) && player.getDirection() == Direction.DOWN) {
                         discDead = disc.takeDamage();
@@ -285,6 +291,7 @@ public class GameScreen implements Screen {
                         spawnTimeCounter = 0f;
                         destroyCount++;
                         if (destroyCount >= 5) {
+                            roundSpawnCount = 0;
                             round++;
                             if (round == 2) {
                                 discs.add(new Disc(font));
@@ -308,5 +315,45 @@ public class GameScreen implements Screen {
         discs.clear();
         fade = true;
         fadeMode = CoreGame.FadeMode.FADE_OUT;
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
     }
 }
