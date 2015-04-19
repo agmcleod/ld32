@@ -48,7 +48,6 @@ public class GameScreen implements InputProcessor, Screen {
 
     public GameScreen(CoreGame cg) {
         this.cg = cg;
-        fadeMode = CoreGame.FadeMode.FADE_IN;
     }
 
     public void attemptAttack() {
@@ -105,7 +104,10 @@ public class GameScreen implements InputProcessor, Screen {
         Bounds overlap = new Bounds();
         Iterator<Disc> itDisc = discs.iterator();
         while (itDisc.hasNext()) {
-            handleIntersectPlayerBounds(itDisc.next().getWorldBounds(), playerBounds, overlap);
+            Disc disc = itDisc.next();
+            if (disc.isAlive()) {
+                handleIntersectPlayerBounds(disc.getWorldBounds(), playerBounds, overlap);
+            }
         }
         while (it.hasNext()) {
             handleIntersectPlayerBounds(it.next(), playerBounds, overlap);
@@ -116,16 +118,28 @@ public class GameScreen implements InputProcessor, Screen {
         if (bounds.overlaps(playerBounds)) {
             Vector2 vel = player.getVelocity();
             if (Intersector.intersectRectangles(bounds, playerBounds, overlap)) {
+                boolean positionCorrected = false;
                 if (playerBounds.leftOverlapsWith(bounds)) {
                     player.getPosition().x += overlap.width;
+                    positionCorrected = true;
                 } else if (playerBounds.rightOverlapsWith(bounds)) {
                     player.getPosition().x -= overlap.width;
+                    positionCorrected = true;
                 }
 
+                if (positionCorrected) {
+                    playerBounds = player.getWorldBounds();
+                }
+                positionCorrected = false;
                 if (playerBounds.bottomOverlapsWith(bounds)) {
                     player.getPosition().y += overlap.height;
+                    positionCorrected = true;
                 } else if (playerBounds.topOverlapsWith(bounds)) {
                     player.getPosition().y -= overlap.height;
+                    positionCorrected = true;
+                }
+                if (positionCorrected) {
+                    playerBounds = player.getWorldBounds();
                 }
             }
         }
@@ -230,7 +244,8 @@ public class GameScreen implements InputProcessor, Screen {
         discs = new Array<Disc>();
         discs.add(new Disc(font));
         fadeTimer = 0;
-        fade = false;
+        fade = true;
+        fadeMode = CoreGame.FadeMode.FADE_IN;
         gameWon = false;
         attackSound = Gdx.audio.newSound(Gdx.files.internal("hurt.mp3"));
         shockSound = Gdx.audio.newSound(Gdx.files.internal("shock.mp3"));

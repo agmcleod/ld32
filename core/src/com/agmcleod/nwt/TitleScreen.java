@@ -14,10 +14,12 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
  */
 public class TitleScreen implements InputProcessor, Screen {
     private CoreGame cg;
-    private TransitionCallback callback;
+    private TransitionCallback fadeInCallback;
+    private TransitionCallback fadeOutCallback;
     private SpriteBatch batch;
     private Texture background;
     private boolean fade;
+    private CoreGame.FadeMode fadeMode;
     private ShapeRenderer shapeRenderer;
     private float fadeTimer = 0;
 
@@ -30,10 +32,19 @@ public class TitleScreen implements InputProcessor, Screen {
         background = new Texture("intro.png");
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
-        fade = false;
-        callback = new TransitionCallback() {
+        fade = true;
+        fadeMode = CoreGame.FadeMode.FADE_IN;
+        fadeInCallback = new TransitionCallback() {
             @Override
             public void callback() {
+                fade = false;
+                fadeTimer = 0f;
+            }
+        };
+        fadeOutCallback = new TransitionCallback() {
+            @Override
+            public void callback() {
+                fade = false;
                 cg.gotoInstructionsScreen();
             }
         };
@@ -51,7 +62,12 @@ public class TitleScreen implements InputProcessor, Screen {
 
         if (fade) {
             fadeTimer += delta;
-            cg.drawBlackTransparentSquare(shapeRenderer, fadeTimer / 0.5f, callback);
+            if (fadeMode == CoreGame.FadeMode.FADE_IN) {
+                cg.drawBlackTransparentSquare(shapeRenderer, 1f - (fadeTimer / 0.5f), fadeInCallback);
+            }
+            else {
+                cg.drawBlackTransparentSquare(shapeRenderer, fadeTimer / 0.5f, fadeOutCallback);
+            }
         }
     }
 
@@ -105,6 +121,7 @@ public class TitleScreen implements InputProcessor, Screen {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         fade = true;
+        fadeMode = CoreGame.FadeMode.FADE_OUT;
         return false;
     }
 
